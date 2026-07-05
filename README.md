@@ -1,5 +1,7 @@
 # FACADE
 
+**Live Demo:** [https://facade.sudohq.me](https://facade.sudohq.me)
+
 FACADE is a minimalistic, hand-drawn (Excalidraw-style) chat application that allows users to converse with AI personas of prominent technology figures. It features a responsive user interface with dark mode support, passwordless magic link authentication, and persistent chat history.
 
 
