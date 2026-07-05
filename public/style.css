@@ -374,32 +374,35 @@ footer [data-tooltip]:hover::after {
         border-radius: 0;
         border: none;
         max-width: none;
+        box-sizing: border-box;
     }
     
     header {
-        flex-direction: column;
-        gap: 15px;
-        text-align: center;
-        padding-bottom: 15px;
+        flex-direction: row;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 10px;
+        text-align: left;
+        padding-bottom: 10px;
     }
     
     header h1 {
         margin: 0;
-        font-size: 1.8rem;
+        font-size: 1.5rem;
     }
     
     .persona-selector {
-        width: 100%;
-        justify-content: center;
+        width: auto;
+        justify-content: flex-end;
         flex-wrap: wrap;
         gap: 8px;
     }
     
     #message-tracker {
-        margin-right: 0;
-        width: 100%;
-        justify-content: center;
-        margin-bottom: 5px;
+        margin-right: 5px;
+        width: auto;
+        margin-bottom: 0;
     }
     
     .message {
