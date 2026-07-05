@@ -28,7 +28,7 @@ document.addEventListener('DOMContentLoaded', () => {
             
             // Clear chat when persona changes
             messages = [];
-            chatMessages.innerHTML = `<div class="message system-msg">Persona switched to ${currentPersonaName}!</div>`;
+            chatMessages.innerHTML = `<div class="message-row" style="justify-content: center;"><div class="message system-msg">Persona switched to ${currentPersonaName}!</div></div>`;
         });
     });
 
@@ -76,18 +76,21 @@ document.addEventListener('DOMContentLoaded', () => {
 
             const aiReply = response.data.reply;
             
-            // Remove loading
-            document.getElementById(loadingId).remove();
-            
-            // Add AI message to UI
-            addMessageToUI('ai', aiReply.content);
+            // Update the existing loading row instead of creating a new one
+            const loadingRow = document.getElementById(loadingId);
+            if (loadingRow) {
+                const msgDiv = loadingRow.querySelector('.message');
+                msgDiv.textContent = aiReply.content;
+                loadingRow.removeAttribute('id');
+            }
             
             // Add to state
             messages.push(aiReply);
 
         } catch (error) {
             console.error(error);
-            document.getElementById(loadingId).remove();
+            const loadingRow = document.getElementById(loadingId);
+            if (loadingRow) loadingRow.remove();
             addMessageToUI('system', 'Error: Could not reach the AI. Check server logs.');
             messages.pop(); // Remove the user message from state since it failed
         } finally {
@@ -97,24 +100,40 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     function addMessageToUI(role, content, id = null) {
-        const div = document.createElement('div');
-        div.classList.add('message');
+        const rowDiv = document.createElement('div');
+        rowDiv.classList.add('message-row');
         
-        if (role === 'user') {
-            div.classList.add('user-msg');
-        } else if (role === 'ai') {
-            div.classList.add('ai-msg');
-            div.classList.add(currentPersona + '-msg');
-        } else {
-            div.classList.add('system-msg');
-        }
+        const avatarImg = document.createElement('img');
+        avatarImg.classList.add('avatar');
+        
+        const msgDiv = document.createElement('div');
+        msgDiv.classList.add('message');
+        msgDiv.textContent = content;
 
         if (id) {
-            div.id = id;
+            rowDiv.id = id;
         }
 
-        div.textContent = content;
-        chatMessages.appendChild(div);
+        if (role === 'user') {
+            rowDiv.classList.add('user-row');
+            msgDiv.classList.add('user-msg');
+            avatarImg.src = 'user.png';
+            rowDiv.appendChild(msgDiv);
+            rowDiv.appendChild(avatarImg);
+        } else if (role === 'ai') {
+            rowDiv.classList.add('ai-row');
+            msgDiv.classList.add('ai-msg');
+            msgDiv.classList.add(currentPersona + '-msg');
+            avatarImg.src = currentPersona === 'persona1' ? 'Hitesh.png' : 'Piyush.png';
+            rowDiv.appendChild(avatarImg);
+            rowDiv.appendChild(msgDiv);
+        } else {
+            msgDiv.classList.add('system-msg');
+            rowDiv.appendChild(msgDiv);
+            rowDiv.style.justifyContent = 'center';
+        }
+        
+        chatMessages.appendChild(rowDiv);
         
         // Scroll to bottom
         const chatContainer = document.getElementById('chat-container');

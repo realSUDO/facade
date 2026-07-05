@@ -203,6 +203,30 @@ main {
     gap: 15px;
 }
 
+.message-row {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    width: 100%;
+}
+
+.user-row {
+    justify-content: flex-end;
+}
+
+.ai-row {
+    justify-content: flex-start;
+}
+
+.avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid var(--border-color);
+    flex-shrink: 0;
+}
+
 .message {
     max-width: 80%;
     padding: 10px 15px;
