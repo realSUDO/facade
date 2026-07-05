@@ -1,0 +1,152 @@
+:root {
+    --bg-color: #fdfdfd;
+    --text-color: #2c2c2c;
+    --primary-color: #3a3a3a;
+    --border-color: #333;
+}
+
+body {
+    margin: 0;
+    padding: 0;
+    font-family: 'Architects Daughter', cursive;
+    background-color: var(--bg-color);
+    color: var(--text-color);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+}
+
+.container {
+    width: 90%;
+    max-width: 600px;
+    height: 90vh;
+    display: flex;
+    flex-direction: column;
+    padding: 20px;
+    background-color: white;
+}
+
+/* Excalidraw / Hand-drawn aesthetic using uneven borders */
+.hand-drawn-box {
+    border: 2px solid var(--border-color);
+    border-radius: 255px 15px 225px 15px/15px 225px 15px 255px;
+    box-shadow: 3px 4px 0px rgba(0,0,0,0.1);
+}
+
+.inner-box {
+    border-radius: 15px 225px 15px 255px/255px 15px 225px 15px;
+}
+
+.hand-drawn-input, .hand-drawn-btn {
+    font-family: 'Architects Daughter', cursive;
+    border: 2px solid var(--border-color);
+    background: transparent;
+    padding: 10px;
+    font-size: 1rem;
+    outline: none;
+}
+
+.hand-drawn-input {
+    border-radius: 255px 15px 225px 15px/15px 225px 15px 255px;
+}
+
+.hand-drawn-input:focus {
+    border-width: 3px;
+}
+
+.hand-drawn-btn {
+    border-radius: 15px 255px 15px 225px/225px 15px 255px 15px;
+    cursor: pointer;
+    background-color: #f0f0f0;
+    transition: transform 0.1s;
+}
+
+.hand-drawn-btn:active {
+    transform: scale(0.95) rotate(2deg);
+}
+
+header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    border-bottom: 2px dashed #ccc;
+    padding-bottom: 10px;
+}
+
+h1 {
+    margin: 0;
+    font-size: 2rem;
+    letter-spacing: 2px;
+}
+
+.persona-selector {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+main {
+    flex-grow: 1;
+    overflow-y: auto;
+    margin-bottom: 20px;
+    padding: 15px;
+    display: flex;
+    flex-direction: column;
+}
+
+#chat-messages {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.message {
+    max-width: 80%;
+    padding: 10px 15px;
+    border: 2px solid var(--border-color);
+    line-height: 1.4;
+    word-wrap: break-word;
+}
+
+.user-msg {
+    align-self: flex-end;
+    background-color: #e8f4f8;
+    border-radius: 255px 15px 225px 15px/15px 225px 15px 255px;
+}
+
+.ai-msg {
+    align-self: flex-start;
+    background-color: #f8f4e8;
+    border-radius: 15px 225px 15px 255px/255px 15px 225px 15px;
+}
+
+.system-msg {
+    align-self: center;
+    border: none;
+    color: #888;
+    font-style: italic;
+    font-size: 0.9rem;
+}
+
+footer form {
+    display: flex;
+    gap: 10px;
+}
+
+#message-input {
+    flex-grow: 1;
+}
+
+/* Custom Scrollbar for that sketch feel */
+::-webkit-scrollbar {
+    width: 8px;
+}
+::-webkit-scrollbar-track {
+    background: transparent;
+}
+::-webkit-scrollbar-thumb {
+    background: #ccc;
+    border-radius: 4px;
+}

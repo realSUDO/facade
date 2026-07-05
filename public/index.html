@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FACADE</title>
+    <link href="https://fonts.googleapis.com/css2?family=Architects+Daughter&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+</head>
+
+<body>
+    <div class="container hand-drawn-box">
+        <header>
+            <h1>FACADE</h1>
+            <div class="persona-selector">
+                <label for="persona">Select Persona: </label>
+                <select id="persona" class="hand-drawn-input">
+                    <option value="persona1">Hitesh Choudhary</option>
+                    <option value="persona2">The Enthusiastic Coach</option>
+                </select>
+            </div>
+        </header>
+
+        <main id="chat-container" class="hand-drawn-box inner-box">
+            <div id="chat-messages">
+                <!-- Messages will appear here -->
+                <div class="message system-msg">Select a persona and say hi!</div>
+            </div>
+        </main>
+
+        <footer>
+            <form id="chat-form">
+                <input type="text" id="message-input" class="hand-drawn-input" placeholder="Type a message..." required
+                    autocomplete="off">
+                <button type="submit" class="hand-drawn-btn">Send</button>
+            </form>
+        </footer>
+    </div>
+    <script src="script.js"></script>
+</body>
+
+</html>
