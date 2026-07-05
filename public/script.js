@@ -57,24 +57,38 @@ document.addEventListener('DOMContentLoaded', async () => {
     const loginMsg = document.getElementById('login-msg');
 
     if (loginForm) {
+        const loginBtn = loginForm.querySelector('button[type="submit"]');
         loginForm.addEventListener('submit', async (e) => {
             e.preventDefault();
             const email = loginEmail.value.trim();
             if (!email) return;
 
-            loginMsg.textContent = "Sending magic link...";
+            loginBtn.disabled = true;
+            loginBtn.textContent = 'Sending...';
+            loginBtn.style.opacity = '0.5';
+            loginMsg.textContent = '';
             
             try {
                 const res = await axios.post('/api/auth/login', { email });
                 loginMsg.textContent = res.data.message || "Check your email for the magic link!";
                 loginEmail.value = '';
+                
+                loginBtn.textContent = 'Sent!';
+                setTimeout(() => {
+                    loginBtn.textContent = 'Send';
+                    loginBtn.disabled = false;
+                    loginBtn.style.opacity = '1';
+                }, 3000);
             } catch (err) {
                 console.error(err);
                 if (err.response && err.response.data && err.response.data.error) {
                     loginMsg.textContent = "Error: " + err.response.data.error;
                 } else {
-                    loginMsg.textContent = "Failed to send magic link. Try again.";
+                    loginMsg.textContent = "Error sending magic link.";
                 }
+                loginBtn.textContent = 'Send';
+                loginBtn.disabled = false;
+                loginBtn.style.opacity = '1';
             }
         });
     }
