@@ -228,6 +228,7 @@ main {
     padding: 15px;
     display: flex;
     flex-direction: column;
+    min-height: 0;
 }
 
 #chat-messages {
