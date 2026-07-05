@@ -7,7 +7,7 @@ const cookieParser = require('cookie-parser');
 const { neon } = require('@neondatabase/serverless');
 const { Resend } = require('resend');
 const jwt = require('jsonwebtoken');
-const { v4: uuidv4 } = require('uuid');
+const crypto = require('crypto');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -266,7 +266,7 @@ app.post('/api/auth/login', async (req, res) => {
     const { email } = req.body;
     if (!email) return res.status(400).json({ error: 'Email required' });
 
-    const token = uuidv4();
+    const token = crypto.randomUUID();
     const expiresAt = new Date(Date.now() + 15 * 60 * 1000); // 15 mins
 
     try {
