@@ -12,6 +12,9 @@
     --container-bg: #fbfaf8;
     --dropdown-arrow: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%235c5c5c' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
     --icon-hover-bg: rgba(0, 0, 0, 0.05);
+    --bg-pattern: radial-gradient(#d1d1d1 1px, transparent 1px);
+    --box-shadow: 4px 5px 0px rgba(0, 0, 0, 0.15);
+    --dot-inactive-opacity: 0.2;
 }
 
 [data-theme="dark"] {
@@ -19,8 +22,6 @@
     --text-color: #e0e0e0;
     --primary-color: #ffad60;
     --border-color: #444444;
-    --btn-bg: #224c30; /* Dark muted green */
-    --btn-active: #193823;
     --header-border: #444444;
     --dropdown-hover: #333333;
     --user-msg-bg: #1e3a4c;
@@ -28,6 +29,9 @@
     --container-bg: #1e1e1e;
     --dropdown-arrow: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23e0e0e0' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
     --icon-hover-bg: rgba(255, 255, 255, 0.1);
+    --bg-pattern: radial-gradient(#3a3a3a 1px, transparent 1px);
+    --box-shadow: 4px 5px 0px rgba(0, 0, 0, 0.4);
+    --dot-inactive-opacity: 0.6;
 }
 
 /* Smooth transitions for theme switching */
@@ -44,6 +48,8 @@ body {
     padding: 0;
     font-family: 'Architects Daughter', cursive;
     background-color: var(--bg-color);
+    background-image: var(--bg-pattern);
+    background-size: 20px 20px;
     color: var(--text-color);
     display: flex;
     justify-content: center;
@@ -52,12 +58,12 @@ body {
 }
 
 .container {
-    width: 90%;
-    max-width: 600px;
+    width: 95%;
+    max-width: 900px;
     height: 90vh;
     display: flex;
     flex-direction: column;
-    padding: 20px;
+    padding: 25px;
     background-color: var(--container-bg);
 }
 
@@ -65,7 +71,7 @@ body {
 .hand-drawn-box {
     border: 2px solid var(--border-color);
     border-radius: 255px 15px 225px 15px/15px 225px 15px 255px;
-    box-shadow: 3px 4px 0px rgba(0,0,0,0.1);
+    box-shadow: var(--box-shadow);
 }
 
 .inner-box {
@@ -145,7 +151,8 @@ body {
     border-radius: 15px 255px 15px 225px/225px 15px 255px 15px;
     cursor: pointer;
     background-color: var(--btn-bg);
-    transition: transform 0.1s, background-color 0.1s;
+    color: #4a4a4a; /* Keep text dark for contrast against the light green button */
+    transition: transform 0.1s, background-color 0.1s, color 0.3s ease;
 }
 
 .hand-drawn-btn:active {
@@ -160,6 +167,7 @@ body {
     justify-content: center;
     background-color: transparent;
     border-color: var(--border-color);
+    color: var(--text-color); /* Icons should inherit the theme text color */
 }
 
 .icon-btn:hover {
@@ -186,6 +194,31 @@ h1 {
     display: flex;
     align-items: center;
     gap: 10px;
+}
+
+.message-tracker {
+    display: flex;
+    gap: 5px;
+    margin-right: 15px;
+    align-items: center;
+}
+
+.tracker-dot {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    border: 2px solid var(--border-color);
+    background-color: transparent;
+    transition: background-color 0.3s, opacity 0.3s;
+}
+
+.tracker-dot.active {
+    opacity: 1;
+}
+
+.tracker-dot.inactive {
+    opacity: var(--dot-inactive-opacity);
+    background-color: transparent !important;
 }
 
 main {
@@ -284,4 +317,48 @@ footer form {
 ::-webkit-scrollbar-thumb {
     background: #ccc;
     border-radius: 4px;
+}
+
+/* --- Custom Tooltips --- */
+[data-tooltip] {
+    position: relative;
+}
+
+[data-tooltip]::after {
+    content: attr(data-tooltip);
+    position: absolute;
+    bottom: -35px;
+    left: 50%;
+    transform: translateX(-50%) translateY(5px);
+    background-color: var(--container-bg);
+    color: var(--text-color);
+    padding: 4px 10px;
+    border: 2px solid var(--border-color);
+    border-radius: 10px 20px 10px 20px/20px 10px 20px 10px;
+    font-family: 'Architects Daughter', cursive;
+    font-size: 0.85rem;
+    white-space: nowrap;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.2s ease, transform 0.2s ease;
+    z-index: 1000;
+    box-shadow: 2px 3px 0px rgba(0, 0, 0, 0.15);
+}
+
+[data-theme="dark"] [data-tooltip]::after {
+    box-shadow: 2px 3px 0px rgba(0, 0, 0, 0.4);
+}
+
+[data-tooltip]:hover::after {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+}
+
+footer [data-tooltip]::after {
+    bottom: calc(100% + 10px);
+    transform: translateX(-50%) translateY(10px);
+}
+
+footer [data-tooltip]:hover::after {
+    transform: translateX(-50%) translateY(0);
 }

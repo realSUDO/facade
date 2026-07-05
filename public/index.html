@@ -7,6 +7,7 @@
     <title>FACADE</title>
     <link href="https://fonts.googleapis.com/css2?family=Architects+Daughter&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
+    <link rel="icon" type="image/png" href="favicon.png">
     <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
 </head>
 
@@ -15,7 +16,10 @@
         <header>
             <h1>FACADE</h1>
             <div class="persona-selector">
-                <button id="theme-toggle" class="hand-drawn-btn icon-btn" aria-label="Toggle Theme">
+                <div id="message-tracker" class="message-tracker" data-tooltip="Messages Remaining">
+                    <!-- Dots injected via JS -->
+                </div>
+                <button id="theme-toggle" class="hand-drawn-btn icon-btn" aria-label="Toggle Theme" data-tooltip="Toggle Theme">
                     <svg id="sun-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
                         stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="20"
                         height="20" style="display: none;">
@@ -35,17 +39,35 @@
                         <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
                     </svg>
                 </button>
+                <button id="logout-btn" class="hand-drawn-btn icon-btn" aria-label="Logout" style="margin-left: 5px;" data-tooltip="Logout">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+                        <polyline points="16 17 21 12 16 7"></polyline>
+                        <line x1="21" y1="12" x2="9" y2="12"></line>
+                    </svg>
+                </button>
                 <div class="custom-dropdown hand-drawn-input" id="persona-dropdown">
-                    <div class="dropdown-selected" id="dropdown-selected">Hitesh Choudhary</div>
+                    <div class="dropdown-selected" id="dropdown-selected" data-tooltip="Switch Persona">Hitesh Choudhary</div>
                     <div class="dropdown-options hand-drawn-box" id="dropdown-options">
-                        <div class="dropdown-option" data-value="persona1">Hitesh Choudhary</div>
-                        <div class="dropdown-option" data-value="persona2">Piyush Garg</div>
+                        <div class="dropdown-option" data-value="persona1" data-tooltip="Chai aur mehnat">Hitesh Choudhary</div>
+                        <div class="dropdown-option" data-value="persona2" data-tooltip="Clean Code & Thar">Piyush Garg</div>
                     </div>
                 </div>
             </div>
         </header>
 
-        <main id="chat-container" class="hand-drawn-box inner-box">
+        <div id="login-screen" class="hand-drawn-box inner-box" style="display: none; flex-grow: 1; flex-direction: column; align-items: center; justify-content: center; padding: 20px; text-align: center;">
+            <h2>Login via Magic Link</h2>
+            <p>You have 10 free messages. Verify your email to start!</p>
+            <form id="login-form" style="display: flex; gap: 10px; width: 100%; max-width: 400px; margin-top: 20px;">
+                <input type="email" id="login-email" class="hand-drawn-input" placeholder="hello@example.com" required style="flex-grow: 1;" data-tooltip="Enter your email">
+                <button type="submit" class="hand-drawn-btn" data-tooltip="Send Magic Link">Send</button>
+            </form>
+            <p id="login-msg" class="system-msg" style="margin-top: 15px; height: 20px;"></p>
+        </div>
+
+        <div id="app-screen" style="display: none; flex-grow: 1; flex-direction: column;">
+            <main id="chat-container" class="hand-drawn-box inner-box">
             <div id="chat-messages">
                 <!-- Messages will appear here -->
                 <div class="message-row" style="justify-content: center;">
@@ -57,10 +79,11 @@
         <footer>
             <form id="chat-form">
                 <input type="text" id="message-input" class="hand-drawn-input" placeholder="Type a message..." required
-                    autocomplete="off">
-                <button type="submit" class="hand-drawn-btn">Send</button>
+                    autocomplete="off" data-tooltip="Type your message">
+                <button type="submit" class="hand-drawn-btn" data-tooltip="Send Message">Send</button>
             </form>
         </footer>
+        </div>
     </div>
     <script src="script.js"></script>
 </body>

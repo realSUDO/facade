@@ -3,9 +3,20 @@ const express = require('express');
 const axios = require('axios');
 const path = require('path');
 const cors = require('cors');
+const cookieParser = require('cookie-parser');
+const { neon } = require('@neondatabase/serverless');
+const { Resend } = require('resend');
+const jwt = require('jsonwebtoken');
+const { v4: uuidv4 } = require('uuid');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
+
+const sql = process.env.DATABASE_URL ? neon(process.env.DATABASE_URL) : null;
+const resend = new Resend(process.env.RESEND_API_KEY);
+const JWT_SECRET = process.env.JWT_SECRET || 'fallback-secret-for-dev';
+const PROD = process.env.PROD === '1';
+const APP_URL = PROD ? 'https://facade.sudohq.me' : 'http://localhost:3000';
 
 const HITESH = `
 # SYSTEM PROMPT: HITESH CHOUDHARY AGENT
@@ -221,10 +232,188 @@ You come from punjab , you have a thar , You are self obsessed , You don't know 
 
 app.use(cors());
 app.use(express.json());
+app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 
-app.post('/api/chat', async (req, res) => {
+// Ensure tables exist on startup
+async function initDB() {
+    if (!sql) return;
     try {
+        await sql`CREATE TABLE IF NOT EXISTS users (
+            email VARCHAR(255) PRIMARY KEY,
+            message_count INT DEFAULT 0
+        )`;
+        await sql`CREATE TABLE IF NOT EXISTS magic_links (
+            token VARCHAR(255) PRIMARY KEY,
+            email VARCHAR(255),
+            expires_at TIMESTAMP
+        )`;
+        await sql`CREATE TABLE IF NOT EXISTS chat_messages (
+            id SERIAL PRIMARY KEY,
+            email VARCHAR(255),
+            persona VARCHAR(255),
+            role VARCHAR(50),
+            content TEXT,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        )`;
+    } catch (e) {
+        console.error('Failed to init DB:', e);
+    }
+}
+initDB();
+
+app.post('/api/auth/login', async (req, res) => {
+    const { email } = req.body;
+    if (!email) return res.status(400).json({ error: 'Email required' });
+
+    const token = uuidv4();
+    const expiresAt = new Date(Date.now() + 15 * 60 * 1000); // 15 mins
+
+    try {
+        if (!sql) {
+            // For testing without DB
+            console.log(`Mock Magic Link: ${APP_URL}/api/auth/verify?token=${token}`);
+            return res.json({ success: true, message: 'Magic link printed to console (DB not configured)' });
+        }
+        
+        await sql`INSERT INTO magic_links (token, email, expires_at) VALUES (${token}, ${email}, ${expiresAt})`;
+        const magicLink = `${APP_URL}/api/auth/verify?token=${token}`;
+        const emailHtml = `
+            <div style="font-family: 'Comic Sans MS', cursive, sans-serif; background-color: #f4f3ec; padding: 40px 20px; text-align: center; color: #4a4a4a;">
+                <div style="max-width: 500px; margin: 0 auto; background-color: #fbfaf8; padding: 30px; border: 2px solid #5c5c5c; border-radius: 15px; box-shadow: 4px 5px 0px rgba(0, 0, 0, 0.15);">
+                    <h1 style="margin-top: 0; font-size: 28px; letter-spacing: 2px;">FACADE</h1>
+                    <p style="font-size: 16px; line-height: 1.6;">You requested a magic login link. Click the button below to securely sign in and start chatting!</p>
+                    <a href="${magicLink}" style="display: inline-block; margin-top: 25px; padding: 12px 24px; background-color: #d3f9d8; color: #4a4a4a; text-decoration: none; font-size: 18px; font-weight: bold; border: 2px solid #5c5c5c; border-radius: 15px; box-shadow: 2px 3px 0px rgba(0,0,0,0.15);">Log in to FACADE</a>
+                    <p style="margin-top: 30px; font-size: 12px; color: #888;">If you didn't request this, you can safely ignore this email.</p>
+                </div>
+            </div>
+        `;
+
+        if (process.env.RESEND_API_KEY) {
+            const response = await resend.emails.send({
+                from: 'FACADE <login@indecode.in>',
+                to: email,
+                subject: 'Login to FACADE',
+                html: emailHtml
+            });
+            
+            if (response.error) {
+                console.error("Resend API Error:", response.error);
+                return res.status(500).json({ error: response.error.message || 'Failed to send email via Resend' });
+            }
+        } else {
+            console.log(`Mock Magic Link: ${magicLink}`);
+        }
+
+        res.json({ success: true, message: 'Magic link sent' });
+    } catch (e) {
+        console.error(e);
+        res.status(500).json({ error: 'Failed to send magic link' });
+    }
+});
+
+app.get('/api/auth/verify', async (req, res) => {
+    const { token } = req.query;
+    if (!token) return res.status(400).send('No token provided');
+
+    try {
+        if (!sql) {
+            // Mock auth if no DB
+            const sessionToken = jwt.sign({ email: 'test@example.com' }, JWT_SECRET, { expiresIn: '7d' });
+            return res.redirect(`/?token=${sessionToken}`);
+        }
+
+        const [link] = await sql`SELECT * FROM magic_links WHERE token = ${token}`;
+        
+        if (!link) {
+            return res.status(400).send('Invalid or expired magic link');
+        }
+
+        if (new Date() > new Date(link.expires_at)) {
+            await sql`DELETE FROM magic_links WHERE token = ${token}`;
+            return res.status(400).send('Magic link expired');
+        }
+
+        const email = link.email;
+
+        const [user] = await sql`SELECT * FROM users WHERE email = ${email}`;
+        if (!user) {
+            await sql`INSERT INTO users (email, message_count) VALUES (${email}, 0)`;
+        }
+
+        await sql`DELETE FROM magic_links WHERE token = ${token}`;
+
+        const sessionToken = jwt.sign({ email }, JWT_SECRET, { expiresIn: '7d' });
+        res.cookie('facade_token', sessionToken, { 
+            httpOnly: true, 
+            secure: PROD, 
+            maxAge: 7 * 24 * 60 * 60 * 1000,
+            sameSite: 'lax'
+        });
+        res.redirect('/');
+
+    } catch (e) {
+        console.error(e);
+        res.status(500).send('Server error');
+    }
+});
+
+// Middleware to verify JWT
+const authMiddleware = (req, res, next) => {
+    const token = req.cookies.facade_token;
+    if (!token) return res.status(401).json({ error: 'Unauthorized' });
+
+    try {
+        const decoded = jwt.verify(token, JWT_SECRET);
+        req.user = decoded;
+        next();
+    } catch (e) {
+        res.status(401).json({ error: 'Invalid token' });
+    }
+};
+
+app.get('/api/auth/me', authMiddleware, async (req, res) => {
+    let message_count = 0;
+    if (sql) {
+        try {
+            const [user] = await sql`SELECT message_count FROM users WHERE email = ${req.user.email}`;
+            if (user) message_count = user.message_count;
+        } catch(e) {}
+    }
+    res.json({ authenticated: true, email: req.user.email, message_count });
+});
+
+app.post('/api/auth/logout', (req, res) => {
+    res.clearCookie('facade_token');
+    res.json({ success: true });
+});
+
+app.get('/api/chat', authMiddleware, async (req, res) => {
+    const { persona } = req.query;
+    if (!persona) return res.status(400).json({ error: 'Persona required' });
+
+    try {
+        if (!sql) return res.json({ messages: [] });
+        const history = await sql`
+            SELECT role, content FROM chat_messages 
+            WHERE email = ${req.user.email} AND persona = ${persona} 
+            ORDER BY created_at ASC
+        `;
+        res.json({ messages: history });
+    } catch (e) {
+        console.error(e);
+        res.status(500).json({ error: 'Failed to fetch history' });
+    }
+});
+
+app.post('/api/chat', authMiddleware, async (req, res) => {
+    try {
+        if (sql) {
+            const [user] = await sql`SELECT message_count FROM users WHERE email = ${req.user.email}`;
+            if (user && user.message_count >= 10) {
+                return res.status(403).json({ error: 'Message limit reached (10 max).' });
+            }
+        }
         const { messages, persona } = req.body;
 
         let systemPrompt = "You are a helpful assistant.";
@@ -253,7 +442,22 @@ app.post('/api/chat', async (req, res) => {
             }
         );
 
-        res.json({ reply: response.data.choices[0].message });
+        if (sql) {
+            await sql`UPDATE users SET message_count = message_count + 1 WHERE email = ${req.user.email}`;
+            
+            const userMsg = messages[messages.length - 1];
+            if (userMsg && userMsg.role === 'user') {
+                await sql`INSERT INTO chat_messages (email, persona, role, content) VALUES (${req.user.email}, ${persona}, ${userMsg.role}, ${userMsg.content})`;
+            }
+            
+            const aiMsg = response.data.choices[0].message;
+            await sql`INSERT INTO chat_messages (email, persona, role, content) VALUES (${req.user.email}, ${persona}, ${aiMsg.role}, ${aiMsg.content})`;
+            
+            const [user] = await sql`SELECT message_count FROM users WHERE email = ${req.user.email}`;
+            res.json({ reply: aiMsg, message_count: user.message_count });
+        } else {
+            res.json({ reply: response.data.choices[0].message, message_count: 0 });
+        }
     } catch (error) {
         console.error("Error calling AI API:", error.response ? error.response.data : error.message);
         res.status(500).json({ error: "Failed to communicate with AI." });
@@ -263,3 +467,5 @@ app.post('/api/chat', async (req, res) => {
 app.listen(PORT, () => {
     console.log(`FACADE server running on http://localhost:${PORT}`);
 });
+
+module.exports = app;
