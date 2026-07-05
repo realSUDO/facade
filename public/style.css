@@ -363,3 +363,63 @@ footer [data-tooltip]::after {
 footer [data-tooltip]:hover::after {
     transform: translateX(-50%) translateY(0);
 }
+
+/* --- Responsive Design --- */
+@media (max-width: 650px) {
+    .container {
+        width: 100%;
+        height: 100vh;
+        margin: 0;
+        padding: 15px;
+        border-radius: 0;
+        border: none;
+        max-width: none;
+    }
+    
+    header {
+        flex-direction: column;
+        gap: 15px;
+        text-align: center;
+        padding-bottom: 15px;
+    }
+    
+    header h1 {
+        margin: 0;
+        font-size: 1.8rem;
+    }
+    
+    .persona-selector {
+        width: 100%;
+        justify-content: center;
+        flex-wrap: wrap;
+        gap: 8px;
+    }
+    
+    #message-tracker {
+        margin-right: 0;
+        width: 100%;
+        justify-content: center;
+        margin-bottom: 5px;
+    }
+    
+    .message {
+        max-width: 85%;
+        padding: 10px 15px;
+        font-size: 0.95rem;
+    }
+    
+    .avatar {
+        width: 32px;
+        height: 32px;
+    }
+    
+    #login-form {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    
+    #login-form input, #login-form button {
+        width: 100%;
+        box-sizing: border-box;
+    }
+}
